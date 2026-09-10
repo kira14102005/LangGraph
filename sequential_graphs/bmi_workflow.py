@@ -32,7 +32,7 @@ height = float(input("Enter height in meters: "))
 weight = float(input("Enter weight in kilograms: "))
 
 #Wrap the input values in a BMIState object
-initial_state = BMIState(**{"height": height, "weight": weight})
+initial_state = BMIState(**{"height": height, "weight": weight, "bmi": 0.0})
 
 final_state =workflow.invoke(initial_state)
 print(f"Final State: {final_state}")
