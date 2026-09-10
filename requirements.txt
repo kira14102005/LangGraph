@@ -1,0 +1,14 @@
+langchain
+langgraph
+pydantic
+langchain-core
+langchain-community
+langchain-classic
+langchain-google-genai
+langchain-experimental
+google-generativeai
+python-dotenv
+streamlit
+numpy
+pandas
+ipykernel
