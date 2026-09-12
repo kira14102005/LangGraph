@@ -1,5 +1,5 @@
 import streamlit as st
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage, AIMessageChunk
 from langchain_core.output_parsers import StrOutputParser
 from langgraph_backend import workflow
 import time
@@ -25,7 +25,7 @@ def stream_token_generator():
         )
         text = chunk.text
 
-        if text:
+        if text and isinstance(chunk, AIMessageChunk):
             for word in text.split(" "):
                 yield word + " "
                 time.sleep(0.05)
