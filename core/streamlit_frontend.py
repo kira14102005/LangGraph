@@ -3,6 +3,13 @@ from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.output_parsers import StrOutputParser
 from langgraph_backend import workflow
 import time
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 def stream_token_generator():
     for chunk, metadata in workflow.stream(
@@ -10,10 +17,11 @@ def stream_token_generator():
         config=config,
         stream_mode="messages",
     ):
-        print(
-        "NODE =", metadata.get("langgraph_node"),
-        "| TYPE =", type(chunk).__name__,
-        "| TEXT =", repr(chunk.text)
+        logger.info(
+        "NODE = %s | TYPE = %s | TEXT = %r",
+        metadata.get("langgraph_node"),
+        type(chunk).__name__,
+        chunk.text,
         )
         text = chunk.text
 
