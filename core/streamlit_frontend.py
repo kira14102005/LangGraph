@@ -17,14 +17,14 @@ for message in chat_history:
         st.markdown(message["content"])
 
 if user_input:
-    with st.chat_message("user"):
-        st.markdown(user_input)
-
     st.session_state['chat_history'].append({"role": "user", "content": user_input})
-
-    ai_response = workflow.invoke({"messages" : [HumanMessage(content=user_input)]}, config=config)['messages'][-1].content
-
-    st.session_state['chat_history'].append({"role": "assistant", "content": ai_response})
+    with st.chat_message("user"):
+            st.markdown(user_input)
 
     with st.chat_message("assistant"):
-        st.markdown(ai_response)
+        ai_response = st.write_stream(
+            chunk.content for chunk, metadata in workflow.stream({"messages" : [HumanMessage(content=user_input)]}, config=config, stream_mode="messages")
+        )
+    
+    st.session_state['chat_history'].append({"role": "assistant", "content": ai_response})
+    
