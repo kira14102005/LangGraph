@@ -10,6 +10,11 @@ def stream_token_generator():
         config=config,
         stream_mode="messages",
     ):
+        print(
+        "NODE =", metadata.get("langgraph_node"),
+        "| TYPE =", type(chunk).__name__,
+        "| TEXT =", repr(chunk.text)
+        )
         text = chunk.text
 
         if text:
