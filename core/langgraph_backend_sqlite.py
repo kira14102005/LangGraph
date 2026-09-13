@@ -38,3 +38,19 @@ graph.add_node('chat_node' , chat_with_ai)
 graph.add_edge(START, 'chat_node')
 graph.add_edge('chat_node', END)
 workflow = graph.compile(checkpointer=checkpointer)
+
+def fetch_all_thread_ids() -> list[str]:
+    cursor = conn.cursor()
+    # Check if table exists yet
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='checkpoints'")
+    if not cursor.fetchone():
+        return []
+    
+    # Query distinct threads ordered by latest activity
+    cursor.execute("""
+        SELECT DISTINCT thread_id 
+        FROM checkpoints 
+        ORDER BY checkpoint_id DESC
+    """)
+    rows = cursor.fetchall()
+    return [row[0] for row in rows]
