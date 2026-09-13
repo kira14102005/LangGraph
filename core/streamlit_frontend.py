@@ -4,6 +4,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langgraph_backend import workflow
 from utils.generate_thread_id import generate_thread_id
 from utils.reset_chat import reset_chat
+from utils.add_thread import add_thread_to_history
 import time
 import logging
 
@@ -12,8 +13,6 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
-
-CONFIG = {"configurable" : {'thread_id' : {st.session_state['thread_id']}}}
 
 def stream_token_generator():
     for chunk, metadata in workflow.stream(
@@ -36,6 +35,16 @@ def stream_token_generator():
 
 
 if __name__ == "__main__":
+    if 'chat_history' not in st.session_state:
+            st.session_state['chat_history'] = []
+    
+    if 'thread_id' not in st.session_state:
+        st.session_state['thread_id'] = generate_thread_id()
+    
+    if 'chat_threads' not in st.session_state:
+        st.session_state['chat_threads'] = []
+    
+    add_thread_to_history(st.session_state['thread_id'])
     st.set_page_config(page_title="LangGraph Chatbot", page_icon=":robot:")
 
     user_input = st.chat_input('Type your message here...')
@@ -43,15 +52,11 @@ if __name__ == "__main__":
     st.sidebar.title("LangGraph Chatbot")
     if st.sidebar.button("New Chat"):
         reset_chat()
-        
+
     st.sidebar.header("Your Chats")
     st.sidebar.text(st.session_state['thread_id'])
 
-    if 'chat_history' not in st.session_state:
-        st.session_state['chat_history'] = []
-
-    if 'thread_id' not in st.session_state:
-        st.session_state['thread_id'] = generate_thread_id()
+    CONFIG = {"configurable" : {'thread_id' : {st.session_state['thread_id']}}}
 
     chat_history = st.session_state['chat_history']
     
