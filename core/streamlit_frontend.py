@@ -57,7 +57,7 @@ if __name__ == "__main__":
     st.sidebar.header("Your Chats")
     render_chat_threads()
 
-    CONFIG = {"configurable" : {'thread_id' : {st.session_state['thread_id']}}}
+    CONFIG = {"configurable" : {'thread_id' : st.session_state['thread_id']}}
 
     chat_history = st.session_state['chat_history']
     
