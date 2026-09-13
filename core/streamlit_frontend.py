@@ -1,7 +1,6 @@
 import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessageChunk
-from langchain_core.output_parsers import StrOutputParser
-from langgraph_backend import workflow
+from langgraph_backend_sqlite import workflow
 from utils.generate_thread_id import generate_thread_id
 from utils.reset_chat import reset_chat
 from utils.add_thread import add_thread_to_history
