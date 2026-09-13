@@ -2,7 +2,6 @@ from langgraph_backend_sqlite import workflow
 from langchain_core.messages import HumanMessage, AIMessage
 
 def load_chat_history_from_state(thread_id: str):
-    """Fetches messages directly from LangGraph SQLite State."""
     config = {"configurable": {"thread_id": thread_id}}
     state = workflow.get_state(config)
     messages = state.values.get("messages", [])
