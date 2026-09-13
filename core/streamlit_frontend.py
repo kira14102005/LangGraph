@@ -12,10 +12,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+CONFIG = {"configurable" : {'thread_id' : {st.session_state['thread_id']}}}
+
 def stream_token_generator():
     for chunk, metadata in workflow.stream(
         {"messages": [HumanMessage(content=user_input)]},
-        config=config,
+        config=CONFIG,
         stream_mode="messages",
     ):
         logger.info(
@@ -40,6 +42,7 @@ if __name__ == "__main__":
     st.sidebar.title("LangGraph Chatbot")
     st.sidebar.button("New Chat")
     st.sidebar.header("Your Chats")
+    st.sidebar.text(st.session_state['thread_id'])
 
     if 'chat_history' not in st.session_state:
         st.session_state['chat_history'] = []
@@ -48,8 +51,6 @@ if __name__ == "__main__":
         st.session_state['thread_id'] = generate_thread_id()
 
     chat_history = st.session_state['chat_history']
-    thread_id = "user_1"
-    config = {"configurable": {"thread_id": thread_id}}
     
     for message in chat_history:
         with st.chat_message(message["role"]):
