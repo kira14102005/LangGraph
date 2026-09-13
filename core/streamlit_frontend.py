@@ -5,6 +5,7 @@ from langgraph_backend import workflow
 from utils.generate_thread_id import generate_thread_id
 from utils.reset_chat import reset_chat
 from utils.add_thread import add_thread_to_history
+from utils.render_threads import render_chat_threads
 import time
 import logging
 
@@ -54,7 +55,7 @@ if __name__ == "__main__":
         reset_chat()
 
     st.sidebar.header("Your Chats")
-    st.sidebar.text(st.session_state['thread_id'])
+    render_chat_threads()
 
     CONFIG = {"configurable" : {'thread_id' : {st.session_state['thread_id']}}}
 
