@@ -3,6 +3,7 @@ from langchain_core.messages import HumanMessage, AIMessageChunk
 from langchain_core.output_parsers import StrOutputParser
 from langgraph_backend import workflow
 from utils.generate_thread_id import generate_thread_id
+from utils.reset_chat import reset_chat
 import time
 import logging
 
@@ -40,7 +41,9 @@ if __name__ == "__main__":
     user_input = st.chat_input('Type your message here...')
 
     st.sidebar.title("LangGraph Chatbot")
-    st.sidebar.button("New Chat")
+    if st.sidebar.button("New Chat"):
+        reset_chat()
+        
     st.sidebar.header("Your Chats")
     st.sidebar.text(st.session_state['thread_id'])
 
