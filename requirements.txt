@@ -12,3 +12,4 @@ streamlit
 numpy
 pandas
 ipykernel
+langgraph-checkpoint-sqlite
