@@ -2,6 +2,7 @@ import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessageChunk
 from langchain_core.output_parsers import StrOutputParser
 from langgraph_backend import workflow
+from utils.generate_thread_id import generate_thread_id
 import time
 import logging
 
@@ -39,9 +40,12 @@ if __name__ == "__main__":
     st.sidebar.title("LangGraph Chatbot")
     st.sidebar.button("New Chat")
     st.sidebar.header("Your Chats")
-    
+
     if 'chat_history' not in st.session_state:
         st.session_state['chat_history'] = []
+
+    if 'thread_id' not in st.session_state:
+        st.session_state['thread_id'] = generate_thread_id()
 
     chat_history = st.session_state['chat_history']
     thread_id = "user_1"
