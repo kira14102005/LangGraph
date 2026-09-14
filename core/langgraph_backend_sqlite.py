@@ -8,6 +8,9 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 #Specialised reducer
 from langgraph.graph.message import add_messages
 import sqlite3
+import os
+
+os.environ['LANGSMITH_PROJECT'] = "streamlit-chatbot"
 
 load_dotenv()
 
