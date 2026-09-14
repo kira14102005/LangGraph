@@ -36,6 +36,8 @@ def stream_token_generator(user_input: str, config: dict):
                 time.sleep(0.05)
 
 
+# TOOLMESSAGE : 2026-09-14 23:08:11,145 - __main__ - INFO - NODE = tools | TYPE = ToolMessage | TEXT = '{"Global Quote": {"01. symbol": "AXP", "02. open": "324.9700", "03. high": "326.2600", "04. low": "322.2100", "05. price": "324.6900", "06. volume": "1930287", "07. latest trading day": "2026-09-11", "08. previous close": "320.7100", "09. change": "3.9800", "10. change percent": "1.2410%"}}'
+
 if __name__ == "__main__":
     st.set_page_config(page_title="LangGraph Chatbot", page_icon=":robot:")
 
@@ -73,7 +75,6 @@ if __name__ == "__main__":
 
         with st.chat_message("assistant"):
             ai_response = st.write_stream(stream_token_generator(user_input, CONFIG))
-
         st.session_state['chat_history'].append({"role": "assistant", "content": ai_response})
 
         st.rerun()
