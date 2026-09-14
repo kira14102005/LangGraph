@@ -124,3 +124,5 @@ final_state = workflow.invoke(input_state, config=config)
 print("Response:", final_state['response'])
 
 print(final_state)
+
+TRACE_URL = "https://eu.smith.langchain.com/public/43e52a0e-c5a3-44ef-a2e5-e5033ffd0fa4/r/01a0a026-38c5-7e71-8cea-21bc8ca6feda?start_time=2026-09-14T13%3A40%3A54.594796Z"
