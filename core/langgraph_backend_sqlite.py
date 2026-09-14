@@ -11,6 +11,7 @@ from langchain_core.tools import tool
 from langchain_community.tools import DuckDuckGoSearchRun
 from langgraph.graph.message import add_messages
 from typing import TypedDict, Annotated
+import requests
 import sqlite3
 import os
 
@@ -18,11 +19,22 @@ os.environ['LANGSMITH_PROJECT'] = "streamlit-chatbot"
 
 load_dotenv()
 
+ALPHA_VANTAGE_API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
+
 #tools
 search_tool = DuckDuckGoSearchRun(region="us-en")
 
 @tool
 def calculator(a:float, b:float, operation:str) -> float:
+    """
+    Performs a calculation on two numbers.
+       Args:
+           a (float): The first number.
+           b (float): The second number.
+           operation (str): The operation to perform. Can be 'add', 'subtract', 'multiply', or 'divide'.
+       Returns:
+           float: The result of the calculation.
+    """
     if operation == "add":
         return a + b
     elif operation == "subtract":
@@ -35,6 +47,15 @@ def calculator(a:float, b:float, operation:str) -> float:
         return a / b
     else:
         raise ValueError(f"Unsupported operation: {operation}")
+
+@tool
+def find_stock_price(symbol: str) -> dict:
+    """
+    Fetches the current stock price for a given stock symbol using the Alpha Vantage API.
+    """
+    url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={ALPHA_VANTAGE_API_KEY}"
+    response = requests.get(url)
+    return response.json()
 
 class ChatState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
