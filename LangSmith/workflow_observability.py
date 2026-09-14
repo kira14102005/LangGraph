@@ -4,6 +4,11 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from pydantic import BaseModel, Field
 from typing import Literal
 from dotenv import load_dotenv
+import os
+from langsmith import traceable
+
+os.environ['LANGSMITH_PROJECT'] = 'langgraph-workflow-observability'
+
 load_dotenv()
 
 llm = ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite")
