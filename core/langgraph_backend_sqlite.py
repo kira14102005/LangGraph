@@ -96,11 +96,11 @@ def find_stock_price_with_keyword(keyword: str) -> dict:
     Returns:
         dict: A dictionary containing the stock price information. If no matching stock symbol is found, returns an error message.
     """
-    symbol = find_stock_symbol(keyword)
+    symbol = find_stock_symbol.invoke({"keyword": keyword})
     if symbol == "NILL":
         return {"error": "No matching stock symbol found for the given keyword."}
     
-    return find_stock_price_with_symbol(symbol)
+    return find_stock_price_with_symbol.invoke({"symbol": symbol})
 
 class ChatState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
@@ -127,12 +127,12 @@ checkpointer = SqliteSaver(conn = conn)
 
 graph = StateGraph(ChatState)
 graph.add_node('chat_node' , chat_with_ai)
-graph.add_node('tool_node', tool_node)
+graph.add_node('tools', tool_node)
 
 #add_edges
 graph.add_edge(START, 'chat_node')
 graph.add_conditional_edges('chat_node', tools_condition)
-graph.add_edge('tool_node', 'chat_node')
+graph.add_edge('tools', 'chat_node')
 
 workflow = graph.compile(checkpointer=checkpointer)
 
