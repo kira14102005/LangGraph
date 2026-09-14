@@ -5,8 +5,12 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.messages import AIMessage, BaseMessage
 from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.prebuilt import ToolNode, tools_condition
 #Specialised reducer
+from langchain_core.tools import tool
+from langchain_community.tools import DuckDuckGoSearchRun
 from langgraph.graph.message import add_messages
+from typing import TypedDict, Annotated
 import sqlite3
 import os
 
@@ -14,7 +18,23 @@ os.environ['LANGSMITH_PROJECT'] = "streamlit-chatbot"
 
 load_dotenv()
 
-from typing import TypedDict, Annotated
+#tools
+search_tool = DuckDuckGoSearchRun(region="us-en")
+
+@tool
+def calculator(a:float, b:float, operation:str) -> float:
+    if operation == "add":
+        return a + b
+    elif operation == "subtract":
+        return a - b
+    elif operation == "multiply":
+        return a * b
+    elif operation == "divide":
+        if b == 0:
+            raise ValueError("Cannot divide by zero.")
+        return a / b
+    else:
+        raise ValueError(f"Unsupported operation: {operation}")
 
 class ChatState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
