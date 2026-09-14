@@ -26,6 +26,7 @@ class ReviewState(TypedDict):
 
 from langchain_core.prompts import PromptTemplate
 
+@traceable(name="Find Sentiment", description="Determine the sentiment of the review, either positive or negative." , tags=["customer support", "sentiment analysis"])
 def find_sentiment(ReviewState):
     review = ReviewState['review']
     prompt_template = PromptTemplate(
@@ -38,6 +39,7 @@ def find_sentiment(ReviewState):
 
 graph = StateGraph(ReviewState)
 
+@traceable(name="Check Sentiment Mood", description="Check the sentiment of the review and determine the appropriate next step.", tags=["customer support", "conditional logic", "sentiment analysis"])
 def check_sentiment_mood(ReviewState):
     sentiment = ReviewState['sentiment']
     if sentiment == "positive":
@@ -54,6 +56,7 @@ assessement_llm = llm.with_structured_output(AssessmentOutputSchema)
 
 from langchain_core.output_parsers import StrOutputParser
 
+@traceable(name="Run Assessment", description="Run an assessment of the review to determine the mood, issue type, and urgency.", tags=["customer support", "review assessment", "issue analysis"])
 def run_assessment(ReviewState):
     review = ReviewState['review']
     prompt_template = PromptTemplate(
@@ -64,6 +67,7 @@ def run_assessment(ReviewState):
     assessment_result = chain.invoke({"review": review})
     return {"assessment": assessment_result.model_dump()}
 
+@traceable(name="Generate Positive Response", description="Generate a positive thank you message to the review.", tags=["customer support", "review response", "positive"])
 def generate_positive_response(ReviewState):
     review = ReviewState['review']
     prompt_template = PromptTemplate(
@@ -75,6 +79,7 @@ def generate_positive_response(ReviewState):
     response_result = chain.invoke({"review": review})
     return {"response": response_result}
 
+@traceable(name="Generate Negative Response", description="Generate a professional empathetic response to the review, addressing the issues mentioned and providing a solution or next steps.", tags=["customer support", "review response", "empathy"])
 def generate_negative_response(ReviewState):
     review = ReviewState['review']
     assessment = ReviewState['assessment']
