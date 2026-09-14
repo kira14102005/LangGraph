@@ -1,7 +1,7 @@
 from langgraph.graph import StateGraph, START, END
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.messages import AIMessage, BaseMessage
 from langgraph.checkpoint.sqlite import SqliteSaver
@@ -112,13 +112,17 @@ llm_with_tools = llm.bind_tools(tools)
 
 def chat_with_ai(state: ChatState):
     messages = state['messages']
-    prompt_template = PromptTemplate(
-        input_variables=["messages"],
-        template="You are a helpful assistant. Continue the conversation based on the following messages. Reply in short-oneline if possi:\n\n{messages}"
-    )
-    chain = prompt_template | llm_with_tools | StrOutputParser()
+    prompt_template = ChatPromptTemplate.from_messages([
+    (
+        "system",
+        "You are a helpful assistant. Reply briefly when possible."
+    ),
+    MessagesPlaceholder(variable_name="messages"),
+    ])
+
+    chain = prompt_template | llm_with_tools 
     response = chain.invoke({"messages" : messages})
-    return  {"messages": [AIMessage(content=response)]}
+    return  {"messages": [response]}
 
 tool_node = ToolNode(tools)
 
