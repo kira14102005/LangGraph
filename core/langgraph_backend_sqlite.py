@@ -54,3 +54,10 @@ def fetch_all_thread_ids() -> list[str]:
     """)
     rows = cursor.fetchall()
     return [row[0] for row in rows]
+
+def fetch_all_thread_ids_with_checkpointer() -> list[str]:
+    #since using set order is not guaranteed
+    all_thread_set = set()
+    for checkpoint in checkpointer.list(None):
+        all_thread_set.add(checkpoint.config['configurable']['thread_id'] if 'configurable' in checkpoint.config and 'thread_id' in checkpoint.config['configurable'] else None)
+    return list(str(thread_id) for thread_id in all_thread_set)
