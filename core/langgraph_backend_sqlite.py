@@ -132,6 +132,7 @@ graph.add_node('tool_node', tool_node)
 #add_edges
 graph.add_edge(START, 'chat_node')
 graph.add_conditional_edges('chat_node', tools_condition)
+graph.add_edge('tool_node', 'chat_node')
 
 workflow = graph.compile(checkpointer=checkpointer)
 
