@@ -105,7 +105,10 @@ def find_stock_price_with_keyword(keyword: str) -> dict:
 class ChatState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
 
-llm = ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite", temperature=0.5)
+tools = [search_tool, calculator, find_stock_price_with_keyword, find_stock_symbol, find_stock_price_with_symbol]
+
+llm_with_tools = llm.bind_tools(tools)
+
 
 def chat_with_ai(state: ChatState):
     messages = state['messages']
@@ -113,19 +116,23 @@ def chat_with_ai(state: ChatState):
         input_variables=["messages"],
         template="You are a helpful assistant. Continue the conversation based on the following messages. Reply in short-oneline if possi:\n\n{messages}"
     )
-    chain = prompt_template | llm | StrOutputParser()
+    chain = prompt_template | llm_with_tools | StrOutputParser()
     response = chain.invoke({"messages" : messages})
     return  {"messages": [AIMessage(content=response)]}
+
+tool_node = ToolNode(tools)
 
 conn = sqlite3.connect("chat_bot.db", check_same_thread=False)
 checkpointer = SqliteSaver(conn = conn)
 
 graph = StateGraph(ChatState)
 graph.add_node('chat_node' , chat_with_ai)
+graph.add_node('tool_node', tool_node)
 
 #add_edges
 graph.add_edge(START, 'chat_node')
-graph.add_edge('chat_node', END)
+graph.add_conditional_edges('chat_node', tools_condition)
+
 workflow = graph.compile(checkpointer=checkpointer)
 
 def fetch_all_thread_ids() -> list[str]:
