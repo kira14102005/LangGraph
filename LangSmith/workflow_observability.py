@@ -109,7 +109,17 @@ input_state = {
     "review" : "I recently purchased a product from your store, and I am extremely disappointed with the quality. The item arrived damaged, and the customer service was unhelpful when I tried to resolve the issue. I expected better from your company."
 }
 
-final_state = workflow.invoke(input_state)
+config = {
+    "run_name": "conditional_workflow_observability",
+    "tags": ["customer support", "review response", "sentiment analysis"],
+    "metadata": {
+        "workflow_type": "conditional",
+        "description": "A workflow that analyzes customer reviews and generates appropriate responses based on sentiment and assessment.",
+        "review_length": len(input_state['review']),
+        "model_used": "gemini-3.5-flash-lite",
+    }
+}
+final_state = workflow.invoke(input_state, config=config)
 
 print("Response:", final_state['response'])
 
