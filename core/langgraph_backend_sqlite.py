@@ -164,3 +164,5 @@ def fetch_all_thread_ids_with_checkpointer() -> list[str]:
     return list(str(thread_id) for thread_id in all_thread_set)
 
 # LANGSMITH_TRACE_URL = https://eu.smith.langchain.com/public/f3cce930-f134-48bb-b5a5-bf6c3cd37430/r/01a0a0a7-0886-7023-b342-9f6f6a1576f0?start_time=2026-09-14T16%3A01%3A36.390092Z
+
+#TOOL CALL TRACE : https://eu.smith.langchain.com/public/872be3f8-5989-4b41-999c-6f13caea90ec/t
