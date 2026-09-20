@@ -4,7 +4,7 @@ import logging
 import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessageChunk
 
-from core.backend.async_langgraph_chatbot import build_workflow, fetch_all_thread_ids
+from core.backend.backend_mcp import build_workflow, fetch_all_thread_ids
 from core.frontend.utils.generate_thread_id import generate_thread_id
 from core.frontend.utils.reset_chat import reset_chat
 from core.frontend.utils.add_thread import add_thread_to_history
@@ -19,9 +19,9 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-@st.cache_resource
-def get_workflow():
-    return asyncio.run(build_workflow())
+# @st.cache_resource
+# def get_workflow():
+#     return asyncio.run(build_workflow())
 
 async def stream_token_generator(workflow, user_input: str, config: dict):
     async for chunk, metadata in workflow.astream(
@@ -61,7 +61,7 @@ def app():
     # Build workflow
     # --------------------------------------------------
 
-    workflow, conn = get_workflow()
+    workflow, conn = run_async(build_workflow())
     # --------------------------------------------------
     # Session state
     # --------------------------------------------------
