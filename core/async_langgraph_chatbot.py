@@ -111,7 +111,7 @@ tools = [search_tool, calculator, find_stock_price_with_keyword, find_stock_symb
 
 llm_with_tools = llm.bind_tools(tools)
 
-async def build_graph():
+async def build_workflow():
     conn = await aiosqlite.connect("chat_bot.db")
     checkpointer = AsyncSqliteSaver(conn)
     
