@@ -351,3 +351,14 @@ async def C():
     │                              │
     └──────────────────────────────┘
     ```
+
+## Run the Streamlit with `python -m`
+- It is for the provided relative imports to run
+```bash
+cd Langgraph/
+python -m streamlit run core/frontend/streamlit_frontend.py
+```
+- And install mcp package of version<2
+```bash
+uv pip install "mcp<2"
+```
