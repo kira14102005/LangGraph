@@ -4,7 +4,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.messages import AIMessage, BaseMessage
-from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langgraph.prebuilt import ToolNode, tools_condition
 #Specialised reducer
 from langchain_core.tools import tool
@@ -14,7 +14,7 @@ from typing import TypedDict, Annotated
 import requests
 import sqlite3
 import os
-import asyncio
+import aiosqlite
 
 
 os.environ['LANGSMITH_PROJECT'] = "streamlit-chatbot"
@@ -110,9 +110,11 @@ class ChatState(TypedDict):
 tools = [search_tool, calculator, find_stock_price_with_keyword, find_stock_symbol, find_stock_price_with_symbol]
 
 llm_with_tools = llm.bind_tools(tools)
-conn = sqlite3.connect("chat_bot.db", check_same_thread=False)
 
-def build_graph():
+async def build_graph():
+    conn = await aiosqlite.connect("chat_bot.db")
+    checkpointer = AsyncSqliteSaver(conn)
+    
     async def chat_with_ai(state: ChatState):
         messages = state['messages']
         prompt_template = ChatPromptTemplate.from_messages([
@@ -129,7 +131,6 @@ def build_graph():
 
     tool_node = ToolNode(tools)
 
-    checkpointer = SqliteSaver(conn = conn)
 
     graph = StateGraph(ChatState)
     graph.add_node('chat_node' , chat_with_ai)
@@ -142,22 +143,24 @@ def build_graph():
 
     workflow = graph.compile(checkpointer=checkpointer)
 
-    return workflow
+    return workflow, conn
 
-def fetch_all_thread_ids() -> list[str]:
-    cursor = conn.cursor()
-    # Check if table exists yet
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='checkpoints'")
-    if not cursor.fetchone():
-        return []
+async def fetch_all_thread_ids(conn) -> list[str]:
+    """
+    Fetches all distinct thread IDs from the checkpoints table in the SQLite database.
+    Args:
+        conn (aiosqlite.Connection): An active connection to the SQLite database.
+    Returns:
+        list[str]: A list of distinct thread IDs, ordered by the most recent checkpoint first.
+    """
     
-    # Query distinct threads ordered by latest activity
-    cursor.execute("""
-        SELECT DISTINCT thread_id 
-        FROM checkpoints 
+    async with conn.execute(
+        """
+        SELECT DISTINCT thread_id
+        FROM checkpoints
         ORDER BY checkpoint_id DESC
-    """)
-    rows = cursor.fetchall()
-    return [row[0] for row in rows]
+        """
+    ) as cursor:
+        rows = await cursor.fetchall()
 
-workflow = build_graph()
+    return [row[0] for row in rows]
