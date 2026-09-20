@@ -7,7 +7,7 @@ from utils.generate_thread_id import generate_thread_id
 from utils.reset_chat import reset_chat
 from utils.add_thread import add_thread_to_history
 from utils.render_threads import render_chat_threads
-from utils.load_chat_history import load_chat_history_from_state
+from utils.load_chat_history import load_chat_history
 import logging
 
 logging.basicConfig(
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     if 'chat_threads' not in st.session_state:
         st.session_state['chat_threads'] = stored_threads or []
     
-    st.session_state['chat_history'] = load_chat_history_from_state(st.session_state['thread_id'])
+    st.session_state['chat_history'] = load_chat_history(st.session_state['thread_id'])
 
     add_thread_to_history(st.session_state['thread_id'])
 
