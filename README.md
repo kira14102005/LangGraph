@@ -252,3 +252,102 @@ and then:
         │
         └── start Event Loop B
     ```
+#### This is correct
+```python
+def main():
+    asyncio.run(A())
+    asyncio.run(B())
+```
+- Though it is sequential, asyncio.run() creates and manages an event loop for each call.
+```text
+main()  [synchronous]
+  │
+  ├── asyncio.run(A())
+  │       │
+  │       ├── Create Event Loop #1
+  │       ├── Run A()
+  │       └── Close Event Loop #1
+  │
+  └── asyncio.run(B())
+          │
+          ├── Create Event Loop #2
+          ├── Run B()
+          └── Close Event Loop #2
+```
+- If you want both to run concurrently:
+```text
+Event Loop
+   │
+   ├── A ────────────────┐
+   │                     │
+   └── B ────────────┐   │
+                     │   │
+                     ▼   ▼
+                   finish
+```
+- The key is that asyncio.gather() does NOT create another event loop. That's the distinction.
+
+### Not Correct or Possible on the Same thread
+```python
+async def main():
+    asyncio.run(A())   # ❌
+    asyncio.run(B())   # ❌
+```
+- Because it initialises atleast 2 event-loops at a same time main()-loop, A()-loop or B()-loop
+- __NOT VALID__
+```text
+main()
+  │
+  └── asyncio.run(A())
+          │
+          ▼
+      Event Loop #1
+          │
+          ▼
+         A()
+          │
+          └── asyncio.run(B())
+                    │
+                    ▼
+               Event Loop #2 ❌
+```
+- __VALID__
+```python
+def main():
+    asyncio.run(A())
+
+
+async def A():
+    await B()
+
+
+async def B():
+    await C()
+
+
+async def C():
+    await asyncio.sleep(1)
+```
+- because there is only 1 event-loop being created
+    ```text
+    main()                         ← synchronous
+    │
+    │ asyncio.run(A())
+    ▼
+    ┌──────────────────────────────┐
+    │ Event Loop                   │
+    │                              │
+    │   A()                        │
+    │    │                         │
+    │    │ await B()               │
+    │    ▼                         │
+    │   B()                        │
+    │    │                         │
+    │    │ await C()               │
+    │    ▼                         │
+    │   C()                        │
+    │    │                         │
+    │    └── await sleep()         │
+    │                              │
+    └──────────────────────────────┘
+    ```
