@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.messages import AIMessage, BaseMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langgraph.prebuilt import ToolNode, tools_condition
 #Specialised reducer
@@ -17,6 +17,7 @@ import os
 import aiosqlite
 
 os.environ['LANGSMITH_PROJECT'] = "streamlit-chatbot-mcp"
+load_dotenv()
 
 REMOTE_MCP_SERVER_URL = os.getenv("REMOTE_MCP_SERVER_URL")
 FMCP_ACCESS_KEY = os.getenv("FMCP_ACCESS_KEY")
@@ -32,8 +33,6 @@ servers = {
 }
 
 client = MultiServerMCPClient(servers)
-
-load_dotenv()
 
 ALPHA_VANTAGE_API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
 llm = ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite", temperature=0.5)
@@ -186,3 +185,17 @@ async def fetch_all_thread_ids(conn) -> list[str]:
     """) as cursor:
         rows = await cursor.fetchall()
         return [row[0] for row in rows]
+
+async def main():
+    workflow, conn = await build_workflow()
+    while True:
+        input_text = input("You: ")
+        if input_text.lower() == "exit":
+            break
+        config = {"configurable": {"thread_id": "default"}}
+        respone = await workflow.ainvoke({"messages": [HumanMessage(content=input_text)]}, config=config)
+        print(f"AI: {respone['messages'][-1].content}")
+        
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
