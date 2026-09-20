@@ -1,12 +1,13 @@
+import asyncio
+
 import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessageChunk
-from langgraph_backend_sqlite import workflow, fetch_all_thread_ids
+from async_langgraph_chatbot import workflow, fetch_all_thread_ids
 from utils.generate_thread_id import generate_thread_id
 from utils.reset_chat import reset_chat
 from utils.add_thread import add_thread_to_history
 from utils.render_threads import render_chat_threads
 from utils.load_chat_history import load_chat_history_from_state
-import time
 import logging
 
 logging.basicConfig(
@@ -16,8 +17,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def stream_token_generator(user_input: str, config: dict):
-    for chunk, metadata in workflow.stream(
+async def stream_token_generator(user_input: str, config: dict):
+    async for chunk, metadata in workflow.astream(
         {"messages": [HumanMessage(content=user_input)]},
         config=config,
         stream_mode="messages",
@@ -33,7 +34,8 @@ def stream_token_generator(user_input: str, config: dict):
         if text and isinstance(chunk, AIMessageChunk):
             for word in text.split(" "):
                 yield word + " "
-                time.sleep(0.05)
+                await asyncio.sleep(0.05)
+
 
 
 # TOOLMESSAGE : 2026-09-14 23:08:11,145 - __main__ - INFO - NODE = tools | TYPE = ToolMessage | TEXT = '{"Global Quote": {"01. symbol": "AXP", "02. open": "324.9700", "03. high": "326.2600", "04. low": "322.2100", "05. price": "324.6900", "06. volume": "1930287", "07. latest trading day": "2026-09-11", "08. previous close": "320.7100", "09. change": "3.9800", "10. change percent": "1.2410%"}}'
