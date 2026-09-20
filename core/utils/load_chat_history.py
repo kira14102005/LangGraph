@@ -1,9 +1,8 @@
-from async_langgraph_chatbot import workflow
 from langchain_core.messages import HumanMessage, AIMessage
 
-def load_chat_history(thread_id: str):
+async def load_chat_history(workflow, thread_id: str):
     config = {"configurable": {"thread_id": thread_id}}
-    state = workflow.get_state(config)
+    state = await workflow.aget_state(config)
     messages = state.values.get("messages", [])
     formatted_history = []
     for msg in messages:
