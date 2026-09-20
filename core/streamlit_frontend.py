@@ -40,8 +40,16 @@ async def stream_token_generator(workflow, user_input: str, config: dict):
 
 # TOOLMESSAGE : 2026-09-14 23:08:11,145 - __main__ - INFO - NODE = tools | TYPE = ToolMessage | TEXT = '{"Global Quote": {"01. symbol": "AXP", "02. open": "324.9700", "03. high": "326.2600", "04. low": "322.2100", "05. price": "324.6900", "06. volume": "1930287", "07. latest trading day": "2026-09-11", "08. previous close": "320.7100", "09. change": "3.9800", "10. change percent": "1.2410%"}}'
 
+@st.cache_resource
+def get_workflow():
+    """
+    Create the LangGraph workflow and DB connection only once.
+    Streamlit reruns will reuse these resources.
+    """
+    return asyncio.run(build_workflow())
+
 async def app():
-    workflow, conn = await build_workflow()
+    workflow, conn = get_workflow()
     
     stored_threads = await fetch_all_thread_ids(conn)
     stored_threads.reverse()
@@ -81,5 +89,6 @@ async def app():
         st.session_state['chat_history'].append({"role": "assistant", "content": ai_response})
 
         st.rerun()
+
 if __name__ == "__main__":
     asyncio.run(app())   
