@@ -110,27 +110,27 @@ class ChatState(TypedDict):
 tools = [search_tool, calculator, find_stock_price_with_keyword, find_stock_symbol, find_stock_price_with_symbol]
 
 llm_with_tools = llm.bind_tools(tools)
+    
+prompt_template = ChatPromptTemplate.from_messages([
+    (
+        "system",
+        "You are a helpful assistant. Reply briefly when possible."
+    ),
+    MessagesPlaceholder(variable_name="messages"),
+    ])
 
+chain = prompt_template | llm_with_tools 
+
+async def chat_with_ai(state: ChatState):
+    messages = state['messages']
+
+    response = await chain.ainvoke({"messages" : messages})
+    return  {"messages": [response]}
 async def build_workflow():
     conn = await aiosqlite.connect("chat_bot.db")
     checkpointer = AsyncSqliteSaver(conn)
-    
-    async def chat_with_ai(state: ChatState):
-        messages = state['messages']
-        prompt_template = ChatPromptTemplate.from_messages([
-        (
-            "system",
-            "You are a helpful assistant. Reply briefly when possible."
-        ),
-        MessagesPlaceholder(variable_name="messages"),
-        ])
-
-        chain = prompt_template | llm_with_tools 
-        response = await chain.ainvoke({"messages" : messages})
-        return  {"messages": [response]}
 
     tool_node = ToolNode(tools)
-
 
     graph = StateGraph(ChatState)
     graph.add_node('chat_node' , chat_with_ai)
@@ -155,12 +155,16 @@ async def fetch_all_thread_ids(conn) -> list[str]:
     """
     
     async with conn.execute(
-        """
-        SELECT DISTINCT thread_id
-        FROM checkpoints
-        ORDER BY checkpoint_id DESC
-        """
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='checkpoints'"
     ) as cursor:
-        rows = await cursor.fetchall()
+        if not await cursor.fetchone():
+            return []
 
-    return [row[0] for row in rows]
+    # Query distinct threads ordered by latest activity
+    async with conn.execute("""
+        SELECT DISTINCT thread_id 
+        FROM checkpoints 
+        ORDER BY checkpoint_id DESC
+    """) as cursor:
+        rows = await cursor.fetchall()
+        return [row[0] for row in rows]
