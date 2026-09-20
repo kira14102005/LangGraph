@@ -4,12 +4,12 @@ import logging
 import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessageChunk
 
-from async_langgraph_chatbot import build_workflow, fetch_all_thread_ids
-from utils.generate_thread_id import generate_thread_id
-from utils.reset_chat import reset_chat
-from utils.add_thread import add_thread_to_history
-from utils.render_threads import render_chat_threads
-from utils.load_chat_history import load_chat_history
+from core.backend.async_langgraph_chatbot import build_workflow, fetch_all_thread_ids
+from core.frontend.utils.generate_thread_id import generate_thread_id
+from core.frontend.utils.reset_chat import reset_chat
+from core.frontend.utils.add_thread import add_thread_to_history
+from core.frontend.utils.render_threads import render_chat_threads
+from core.frontend.utils.load_chat_history import load_chat_history
 
 
 logging.basicConfig(
