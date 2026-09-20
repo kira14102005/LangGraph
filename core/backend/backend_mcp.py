@@ -136,6 +136,8 @@ prompt_template = ChatPromptTemplate.from_messages([
 async def build_workflow():
     mcp_tool_list = await client.get_tools()
     llm_with_tools = llm.bind_tools(tools + mcp_tool_list)
+    for tool in mcp_tool_list:
+        print(f"Tool Name: {tool.name}")
     conn = await aiosqlite.connect("chat_bot.db")
     checkpointer = AsyncSqliteSaver(conn)
 
@@ -192,9 +194,9 @@ async def main():
         input_text = input("You: ")
         if input_text.lower() == "exit":
             break
-        config = {"configurable": {"thread_id": "default"}}
+        config = {"configurable": {"thread_id": "user_thread_1"}}  # You can change the thread_id as needed
         respone = await workflow.ainvoke({"messages": [HumanMessage(content=input_text)]}, config=config)
-        print(f"AI: {respone['messages'][-1].content}")
+        print(f"AI: {respone['messages'][-1].text}")
         
 if __name__ == "__main__":
     import asyncio
