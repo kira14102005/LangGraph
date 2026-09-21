@@ -1,10 +1,17 @@
+import tempfile
+
 from langgraph.graph import StateGraph, START, END
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from langchain_community.document_loaders import PyPDFLoader
 from langgraph.prebuilt import ToolNode, tools_condition
 #Specialised reducer
 from langchain_core.tools import tool
@@ -21,6 +28,8 @@ load_dotenv()
 
 REMOTE_MCP_SERVER_URL = os.getenv("REMOTE_MCP_SERVER_URL")
 FMCP_ACCESS_KEY = os.getenv("FMCP_ACCESS_KEY")
+_THREAD_RETRIEVERS = {}
+_THREAD_METADATA = {}
 
 servers = {
     "remote_expense_server": {
@@ -37,6 +46,46 @@ client = MultiServerMCPClient(servers)
 ALPHA_VANTAGE_API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
 llm = ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite", temperature=0.5)
 llm_2 = ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite", temperature=0.0)
+embeddings = GoogleGenerativeAIEmbeddings(
+    model="gemini-embedding-2-preview", 
+    output_dimensionality=768
+)
+
+def load_and_index_pdf(file: bytes, thread_id:str, fileName:Optional[str]=None) -> dict:
+
+    if not file:
+        raise ValueError("No file provided for indexing.")
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+        temp_file.write(file)
+        temp_file.name = fileName if fileName else "temp.pdf"
+        temp_file_path = temp_file.name
+
+    try:
+        loader = PyPDFLoader(temp_file_path)
+        documents = loader.load()
+
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, separators=["\n\n", "\n", " ", ""])
+        chunks = text_splitter.split_documents(documents)
+
+        vectorstore = FAISS.from_documents(chunks, embeddings)
+
+        retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 4})
+
+        _THREAD_RETRIEVERS[str(thread_id)] = retriever
+        _THREAD_METADATA[str(thread_id)] = {"file_name": fileName if fileName else "temp.pdf", "num_chunks": len(chunks)}
+
+        return {
+            "message": f"PDF indexed successfully for thread_id: {thread_id}.",
+            "file_name": fileName if fileName else "temp.pdf",
+            "num_chunks": len(chunks)
+        }
+    finally:
+        try:
+            os.remove(temp_file_path)
+        except Exception as e:
+            print(f"Error deleting temporary file: {e}")
+
 #tools
 search_tool = DuckDuckGoSearchRun(region="us-en")
 
