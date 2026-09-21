@@ -19,3 +19,5 @@ aiosqlite
 aiofiles
 fastmcp
 langchain-mcp-adapters
+pypdf
+faiss-cpu
