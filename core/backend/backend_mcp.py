@@ -166,6 +166,30 @@ def find_stock_price_with_keyword(keyword: str) -> dict:
     
     return find_stock_price_with_symbol.invoke({"symbol": symbol})
 
+@tool
+def rag_search(query: str, thread_id: str) -> dict:
+    """
+    Performs a retrieval-augmented generation (RAG) search for a given query using the indexed PDF data for a specific thread ID.
+    Args:
+        query (str): The search query.
+        thread_id (str): The thread ID associated with the indexed PDF data.
+    Returns:
+        dict: A dictionary containing the search results, including the query, thread ID, context (list of retrieved documents), and metadata (list of document metadata).
+    """
+    retriever = _THREAD_RETRIEVERS.get(str(thread_id))
+    if not retriever:
+        return []
+    
+    result = retriever.invoke(query)
+    context = [doc.page_content for doc in result]
+    metadata = [doc.metadata for doc in result]
+    return {
+        "query": query,
+        "thread_id": thread_id,
+        "context": context,
+        "metadata": metadata
+    }
+
 class ChatState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
 
