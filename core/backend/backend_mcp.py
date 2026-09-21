@@ -17,7 +17,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from langchain_core.tools import tool
 from langchain_community.tools import DuckDuckGoSearchRun
 from langgraph.graph.message import add_messages
-from typing import TypedDict, Annotated
+from typing import Optional, TypedDict, Annotated
 from langchain_mcp_adapters.client import MultiServerMCPClient
 import requests
 import os
@@ -52,7 +52,17 @@ embeddings = GoogleGenerativeAIEmbeddings(
 )
 
 def load_and_index_pdf(file: bytes, thread_id:str, fileName:Optional[str]=None) -> dict:
-
+    """
+    Loads a PDF file, splits it into chunks, and indexes it using FAISS for retrieval
+    Args:
+        file (bytes): The PDF file content as bytes.
+        thread_id (str): The thread ID to associate with the indexed data.
+        fileName (Optional[str]): The name of the PDF file. Defaults to None.
+    Returns:
+        dict: A dictionary containing a success message, the file name, and the number of chunks created.
+    Raises:
+        ValueError: If no file is provided for indexing.
+    """
     if not file:
         raise ValueError("No file provided for indexing.")
 
