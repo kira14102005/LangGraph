@@ -203,7 +203,7 @@ def rag_search(query: str, thread_id: str) -> dict:
 class ChatState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
 
-tools = [search_tool, calculator, find_stock_price_with_keyword, find_stock_symbol, find_stock_price_with_symbol]
+tools = [search_tool, calculator, find_stock_price_with_keyword, find_stock_symbol, find_stock_price_with_symbol, rag_search]
 
 
     
