@@ -8,7 +8,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import ToolNode, tools_condition
 #Specialised reducer
 from langchain_core.tools import tool
-from langgraph.types import Command, interrupt
+from langgraph.types import Command, interrupt as langgraph_interrupt
 from langgraph.graph.message import add_messages
 from typing import TypedDict, Annotated
 import requests
@@ -87,7 +87,7 @@ def purchase_stock(symbol: str, quantity: int) -> dict:
         dict: A dictionary containing the purchase confirmation and details.
     """
     # Simulate a stock purchase (in a real application, this would involve API calls to a brokerage)
-    decision = interrupt(f"Do you want to purchase {quantity} shares of {symbol}? (yes/no)")
+    decision = langgraph_interrupt(f"Do you want to purchase {quantity} shares of {symbol}? (yes/no)")
     if isinstance(decision, str) and decision.lower() == "yes":
         return {
             "status": "success",
@@ -147,8 +147,8 @@ if __name__ == "__main__":
         output_state = chatbot.invoke(input_state, config=config)
         interrupts = output_state.get("__interrupt__", [])
         if interrupts:
-            for interrupt in interrupts:
-                decision = input(f"Interrupt: {interrupt.value} (yes/no): ")
+            for langgraph_interrupt_event in interrupts:
+                decision = input(f"Interrupt: {langgraph_interrupt_event.value} (yes/no): ")
                 decision = decision.strip().lower()
                 
                 output_state = chatbot.invoke(
