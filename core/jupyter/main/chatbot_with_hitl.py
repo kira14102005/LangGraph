@@ -3,12 +3,12 @@ from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.messages import AIMessage, BaseMessage
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import ToolNode, tools_condition
 #Specialised reducer
 from langchain_core.tools import tool
-from langchain_community.tools import DuckDuckGoSearchRun
+from langgraph.types import Command, interrupt
 from langgraph.graph.message import add_messages
 from typing import TypedDict, Annotated
 import requests
@@ -130,7 +130,30 @@ graph.add_node("tools", tool_node)
 graph.add_edge(START, "chat")
 graph.add_conditional_edges("chat", tools_condition)
 graph.add_edge("tools", "chat")
+chatbot = graph.compile(checkpointer=MemorySaver())
 
 if __name__ == "__main__":
+    config= {"configurable": {"thread_id": "user_1"}}
     while True:
-        input_text = input("You> ")
+        input_text = input("You > ")
+        end_words = ["exit", "quit", "bye", "0"]
+        if input_text.lower() in end_words:
+            break
+        
+        input_state = {"messages": [HumanMessage(content=input_text)]}
+        
+        output_state = chatbot.invoke(input_state, config=config)
+        interrupts = output_state.get("__interrupt__", [])
+        if interrupts:
+            for interrupt in interrupts:
+                decision = input(f"Interrupt: {interrupt['message']} (yes/no): ")
+                decision = decision.strip().lower()
+                
+                output_state = chatbot.invoke(
+                    Command(resume=decision)
+                    , config=config
+                )
+        
+        messages = output_state.get("messages", [])
+        last_message = messages[-1]
+        print(f"AI > {last_message.text}")
