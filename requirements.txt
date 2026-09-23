@@ -21,3 +21,5 @@ fastmcp
 langchain-mcp-adapters
 pypdf
 faiss-cpu
+langgraph-checkpoint-postgres
+psycopg[binary, pool]
